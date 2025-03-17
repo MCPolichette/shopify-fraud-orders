@@ -68,7 +68,6 @@
 					localStorage.getItem("shopifyStore") || "";
 				document.getElementById("accessToken").value =
 					localStorage.getItem("shopifyAccessToken") || "";
-				console.log("loaded from local storage");
 			});
 
 			function saveSettingsAndFetchOrders() {
@@ -91,14 +90,18 @@
 
 			async function fetchOrders(storeName, accessToken) {
 				try {
-					document.getElementById("output").textContent =
-						"Loading fraudulent orders...";
-					const url = `https://shopify-fraud-i2z7vjyao-mcpolichettes-projects.vercel.app/api/fraudulent-orders?store=${storeName}&token=${accessToken}`;
-					console.log(url);
+					// Get date in YYYY-MM-DD format
+					const thirtyDaysAgo = new Date();
+					thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 30);
+					const createdAtMin = thirtyDaysAgo
+						.toISOString()
+						.split("T")[0];
+
+					const url = `https://shopify-fraud-i2z7vjyao-mcpolichettes-projects.vercel.app/api/fraudulent-orders?store=${storeName}&token=${accessToken}&created_at_min=${createdAtMin}`;
 
 					const response = await fetch(url, {
 						method: "GET",
-						mode: "cors", // ✅ Explicitly allow CORS
+						mode: "cors",
 						headers: {
 							"Content-Type": "application/json",
 							"Access-Control-Allow-Origin": "*",
@@ -113,7 +116,6 @@
 					}
 
 					const data = await response.json();
-					console.log(data);
 
 					document.getElementById("output").textContent =
 						JSON.stringify(data, null, 2);

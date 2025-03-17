@@ -1,6 +1,7 @@
 const axios = require("axios");
 
 module.exports = async (req, res) => {
+	// ✅ This ensures your API allows requests from GitHub Pages
 	res.setHeader("Access-Control-Allow-Origin", "*");
 	res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
 	res.setHeader(
@@ -25,7 +26,7 @@ module.exports = async (req, res) => {
 		thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 30);
 		const createdAtMin = thirtyDaysAgo.toISOString().split(".")[0] + "Z";
 
-		// ✅ Specify only the necessary fields to reduce response size
+		// ✅ Reduce response fields for faster results
 		const fields =
 			"id,name,created_at,total_price,cancel_reason,financial_status,fulfillment_status";
 
@@ -38,15 +39,7 @@ module.exports = async (req, res) => {
 			},
 		});
 
-		const orders = response.data.orders;
-		const fraudulentOrders = orders.filter(
-			(order) =>
-				(order.cancel_reason === "fraud" && order.cancelled_at) ||
-				(order.refunds &&
-					order.refunds.some((refund) => refund.reason === "fraud"))
-		);
-
-		res.status(200).json(fraudulentOrders);
+		res.status(200).json(response.data.orders);
 	} catch (error) {
 		console.error("Error fetching orders:", error);
 		res.status(500).json({ error: "Failed to fetch orders from Shopify" });
