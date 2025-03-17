@@ -68,6 +68,7 @@
 					localStorage.getItem("shopifyStore") || "";
 				document.getElementById("accessToken").value =
 					localStorage.getItem("shopifyAccessToken") || "";
+				console.log("loaded from local storage");
 			});
 
 			function saveSettingsAndFetchOrders() {
@@ -90,15 +91,25 @@
 
 			async function fetchOrders(storeName, accessToken) {
 				try {
-					const url = `https://your-vercel-project.vercel.app/api/fraudulent-orders?store=${storeName}&token=${accessToken}`;
+					document.getElementById("output").textContent =
+						"Loading fraudulent orders...";
+					const url = `https://shopify-fraud-i2z7vjyao-mcpolichettes-projects.vercel.app/api/fraudulent-orders?store=${storeName}&token=${accessToken}`;
+					console.log(url);
 
-					const response = await fetch(url);
+					const response = await fetch(url, {
+						method: "GET",
+						mode: "cors", // ✅ Explicitly allow CORS
+						headers: {
+							"Content-Type": "application/json",
+						},
+					});
 
 					if (!response.ok) {
 						throw new Error("Failed to fetch fraudulent orders");
 					}
 
 					const data = await response.json();
+					console.log(data);
 
 					document.getElementById("output").textContent =
 						JSON.stringify(data, null, 2);

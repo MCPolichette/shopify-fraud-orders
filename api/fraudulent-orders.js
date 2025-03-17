@@ -3,10 +3,13 @@ const axios = require("axios");
 module.exports = async (req, res) => {
 	res.setHeader("Access-Control-Allow-Origin", "*");
 	res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-	res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+	res.setHeader(
+		"Access-Control-Allow-Headers",
+		"Content-Type, Authorization"
+	);
 
 	if (req.method === "OPTIONS") {
-		return res.status(200).end();
+		return res.status(204).end();
 	}
 
 	const { store, token } = req.query;
@@ -19,10 +22,14 @@ module.exports = async (req, res) => {
 
 	try {
 		const thirtyDaysAgo = new Date();
-		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-		const createdAtMin = thirtyDaysAgo.toISOString();
+		thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 30);
+		const createdAtMin = thirtyDaysAgo.toISOString().split(".")[0] + "Z";
 
-		const url = `https://${store}.myshopify.com/admin/api/2025-01/orders.json?status=any&created_at_min=${createdAtMin}`;
+		// ✅ Specify only the necessary fields to reduce response size
+		const fields =
+			"id,name,created_at,total_price,cancel_reason,financial_status,fulfillment_status";
+
+		const url = `https://${store}.myshopify.com/admin/api/2025-01/orders.json?status=any&created_at_min=${createdAtMin}&fields=${fields}`;
 
 		const response = await axios.get(url, {
 			headers: {
@@ -35,7 +42,7 @@ module.exports = async (req, res) => {
 		const fraudulentOrders = orders.filter(
 			(order) =>
 				(order.cancel_reason === "fraud" && order.cancelled_at) ||
-				(order.refunds.length > 0 &&
+				(order.refunds &&
 					order.refunds.some((refund) => refund.reason === "fraud"))
 		);
 
