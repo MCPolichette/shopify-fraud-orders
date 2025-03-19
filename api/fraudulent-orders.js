@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 module.exports = async (req, res) => {
-	// ✅ This ensures your API allows requests from GitHub Pages
+	// ✅ Properly handle CORS headers
 	res.setHeader("Access-Control-Allow-Origin", "*");
 	res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
 	res.setHeader(
@@ -10,10 +10,10 @@ module.exports = async (req, res) => {
 	);
 
 	if (req.method === "OPTIONS") {
-		return res.status(204).end();
+		return res.status(204).end(); // ✅ Handles preflight request
 	}
 
-	const { store, token } = req.query;
+	const { store, token, created_at_min } = req.query;
 
 	if (!store || !token) {
 		return res
@@ -22,15 +22,10 @@ module.exports = async (req, res) => {
 	}
 
 	try {
-		const thirtyDaysAgo = new Date();
-		thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 30);
-		const createdAtMin = thirtyDaysAgo.toISOString().split(".")[0] + "Z";
-
-		// ✅ Reduce response fields for faster results
 		const fields =
 			"id,name,created_at,total_price,cancel_reason,financial_status,fulfillment_status";
 
-		const url = `https://${store}.myshopify.com/admin/api/2025-01/orders.json?status=any&created_at_min=${createdAtMin}&fields=${fields}`;
+		const url = `https://${store}.myshopify.com/admin/api/2025-01/orders.json?status=canceled&created_at_min=${created_at_min}&fields=${fields}`;
 
 		const response = await axios.get(url, {
 			headers: {
