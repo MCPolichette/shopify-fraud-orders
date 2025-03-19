@@ -97,28 +97,18 @@
 						.toISOString()
 						.split("T")[0];
 
-					const url = `https://shopify-fraud-i2z7vjyao-mcpolichettes-projects.vercel.app/api/fraudulent-orders?store=${storeName}&token=${accessToken}&created_at_min=${createdAtMin}`;
+					const url = `https://your-vercel-project.vercel.app/api/fraudulent-orders?store=${storeName}&token=${accessToken}&created_at_min=${createdAtMin}`;
 
 					const response = await fetch(url, {
 						method: "GET",
-						mode: "cors",
+						mode: "no-cors", // ✅ Making response opaque
 						headers: {
 							"Content-Type": "application/json",
-							"Access-Control-Allow-Origin": "*",
-							"Access-Control-Allow-Methods": "GET, OPTIONS",
-							"Access-Control-Allow-Headers":
-								"Content-Type, Authorization",
 						},
 					});
 
-					if (!response.ok) {
-						throw new Error("Failed to fetch fraudulent orders");
-					}
-
-					const data = await response.json();
-
 					document.getElementById("output").textContent =
-						JSON.stringify(data, null, 2);
+						"Opaque response received. Check the network tab for details.";
 				} catch (error) {
 					document.getElementById("output").textContent =
 						"Error: " + error.message;
